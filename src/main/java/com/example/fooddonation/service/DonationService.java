@@ -81,8 +81,18 @@ public class DonationService {
     }
 
     @Transactional(readOnly = true)
-    public List<DonationDTO> listAllAvailable() {
-        return donationRepo.findByStatus("AVAILABLE").stream().map(this::toDto).collect(Collectors.toList());
+    public List<DonationDTO> listAllAvailable(String currentUserEmail) {
+        // fetch all donations with AVAILABLE status, then filter out those
+        // created by the calling user (so user won't see their own donations in "available")
+        return donationRepo.findByStatus("AVAILABLE").stream()
+                .filter(d -> {
+                    if (d.getCreatedBy() == null) return true;
+                    // compare emails to be safe (createdBy is a User entity)
+                    String creatorEmail = d.getCreatedBy().getEmail();
+                    return creatorEmail == null || !creatorEmail.equals(currentUserEmail);
+                })
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)

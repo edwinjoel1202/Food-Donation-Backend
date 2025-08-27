@@ -8,4 +8,7 @@ import java.util.List;
 public interface DonationRequestRepository extends JpaRepository<DonationRequest, Long> {
     List<DonationRequest> findByRequesterId(Long requesterId);
     List<DonationRequest> findByDonationId(Long donationId);
+
+    // NEW: find requests where the donation was created by a specific user (creator id)
+    List<DonationRequest> findByDonationCreatedById(Long createdById);
 }

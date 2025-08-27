@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/requests")
 public class RequestController {
@@ -24,6 +26,16 @@ public class RequestController {
     public ResponseEntity<?> create(@RequestBody DonationRequestDTO dto) {
         DonationRequest created = requestService.createRequest(dto, currentUserEmail());
         return ResponseEntity.ok(created);
+    }
+
+    /**
+     * List requests relevant to the current authenticated user.
+     * Admins will receive all requests; other users will receive only requests for donations they created.
+     */
+    @GetMapping
+    public ResponseEntity<List<DonationRequest>> listAll() {
+        String email = currentUserEmail();
+        return ResponseEntity.ok(requestService.listRequestsForUser(email));
     }
 
     @PostMapping("/{id}/action")

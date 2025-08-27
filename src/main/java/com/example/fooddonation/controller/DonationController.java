@@ -34,7 +34,7 @@ public class DonationController {
 
     @GetMapping("/available")
     public ResponseEntity<List<DonationDTO>> listAvailable() {
-        return ResponseEntity.ok(donationService.listAllAvailable());
+        return ResponseEntity.ok(donationService.listAllAvailable(currentUserEmail()));
     }
 
     @GetMapping("/{id}")
