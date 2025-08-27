@@ -1,6 +1,8 @@
 // filename: src/main/java/com/example/fooddonation/service/AiService.java
 package com.example.fooddonation.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -9,8 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * AI wrapper for Gemini API.
@@ -25,6 +26,7 @@ public class AiService {
     private String aiKey;
 
     private final RestTemplate rest = new RestTemplate();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private String generateWithGemini(String prompt, int maxTokens) {
         String url = aiEndpoint + "?key=" + aiKey;
@@ -69,13 +71,53 @@ public class AiService {
         return generateWithGemini(prompt, 10).trim();
     }
 
-    public String calculateNutrition(String name, double quantity, String unit) {
-        String prompt = "Estimate the total calories for " + quantity + " " + unit + " of \"" + name + "\". Return only the number of calories.";
-        return generateWithGemini(prompt, 10).trim();
+    public Map<String, Object> calculateDetailedNutrition(String name, double quantity, String unit) {
+        String prompt = "Provide detailed nutrition information for " + quantity + " " + unit + " of \"" + name + "\". " +
+                "Include calories, protein (g), carbohydrates (g), fats (g), fiber (g), sugars (g), vitamins (e.g., vitamin C mg), minerals (e.g., iron mg). " +
+                "Return only the JSON object with keys like 'calories', 'protein', etc. without any other text or code blocks.";
+        String response = generateWithGemini(prompt, 200).trim();
+
+        // Strip any potential markdown code blocks
+        if (response.startsWith("```json")) {
+            response = response.substring(7).trim();
+        } else if (response.startsWith("```")) {
+            response = response.substring(3).trim();
+        }
+        if (response.endsWith("```")) {
+            response = response.substring(0, response.length() - 3).trim();
+        }
+
+        try {
+            return objectMapper.readValue(response, Map.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return Map.of("error", "Failed to parse nutrition info", "rawResponse", response);
+        }
     }
 
     public String chatResponse(String message) {
         String prompt = "You are a helpful assistant for a food donation app. Respond to: " + message;
         return generateWithGemini(prompt, 200).trim();
+    }
+
+    // New method for allergen detection
+    public String detectAllergens(String name, String description) {
+        String descPart = (description != null && !description.isEmpty()) ? " with description: \"" + description + "\"" : "";
+        String prompt = "List potential allergens in the food item \"" + name + "\"" + descPart + ". " +
+                "Common allergens: nuts, dairy, gluten, shellfish, eggs, soy, etc. Return a comma-separated list or 'none' if no known allergens.";
+        return generateWithGemini(prompt, 50).trim();
+    }
+
+    // New method for recipe suggestions
+    public String suggestRecipes(String name, int servings) {
+        String prompt = "Suggest 3 simple recipes using \"" + name + "\" as the main ingredient, for " + servings + " servings. " +
+                "For each recipe, include title, ingredients list, and short instructions. Return as formatted text.";
+        return generateWithGemini(prompt, 300).trim();
+    }
+
+    // New method for storage tips
+    public String getStorageTips(String name) {
+        String prompt = "Provide tips on how to store \"" + name + "\" to extend its shelf life. Include temperature, packaging, and duration. Return as bullet points.";
+        return generateWithGemini(prompt, 150).trim();
     }
 }

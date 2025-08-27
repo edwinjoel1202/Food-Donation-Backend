@@ -32,8 +32,8 @@ public class AiController {
 
     @GetMapping("/nutrition")
     public ResponseEntity<?> nutrition(@RequestParam("name") String name, @RequestParam("quantity") double quantity, @RequestParam("unit") String unit) {
-        String calories = aiService.calculateNutrition(name, quantity, unit);
-        return ResponseEntity.ok(Map.of("calories", calories));
+        Map<String, Object> nutritionInfo = aiService.calculateDetailedNutrition(name, quantity, unit);
+        return ResponseEntity.ok(nutritionInfo);
     }
 
     @PostMapping("/chat")
@@ -41,5 +41,26 @@ public class AiController {
         String message = body.get("message");
         String response = aiService.chatResponse(message);
         return ResponseEntity.ok(Map.of("response", response));
+    }
+
+    // New endpoint for allergen detection
+    @GetMapping("/allergens")
+    public ResponseEntity<?> allergens(@RequestParam("name") String name, @RequestParam(value = "description", required = false) String description) {
+        String allergens = aiService.detectAllergens(name, description);
+        return ResponseEntity.ok(Map.of("allergens", allergens));
+    }
+
+    // New endpoint for recipe suggestions
+    @GetMapping("/recipes")
+    public ResponseEntity<?> recipes(@RequestParam("name") String name, @RequestParam(value = "servings", defaultValue = "4") int servings) {
+        Object recipes = aiService.suggestRecipes(name, servings);
+        return ResponseEntity.ok(Map.of("recipes", recipes));
+    }
+
+    // New endpoint for storage tips to extend shelf life
+    @GetMapping("/storage-tips")
+    public ResponseEntity<?> storageTips(@RequestParam("name") String name) {
+        String tips = aiService.getStorageTips(name);
+        return ResponseEntity.ok(Map.of("tips", tips));
     }
 }
