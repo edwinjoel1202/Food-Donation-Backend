@@ -118,6 +118,6 @@ public class AiService {
     // New method for storage tips
     public String getStorageTips(String name) {
         String prompt = "Provide tips on how to store \"" + name + "\" to extend its shelf life. Include temperature, packaging, and duration. Return as bullet points.";
-        return generateWithGemini(prompt, 150).trim();
+        return generateWithGemini(prompt, 300).trim();
     }
 }
