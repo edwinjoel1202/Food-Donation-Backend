@@ -120,4 +120,124 @@ public class AiService {
         String prompt = "Provide tips on how to store \"" + name + "\" to extend its shelf life. Include temperature, packaging, and duration. Return as bullet points.";
         return generateWithGemini(prompt, 300).trim();
     }
+
+    /**
+     * Calculate how many people can consume the donated food,
+     * returning multiple estimates (small eaters / average / large eaters).
+     *
+     * The method is deterministic and does not require external AI. If Gemini is configured,
+     * we include the AI text as an optional 'aiNote'.
+     */
+    public Map<String, Object> calculateConsumeRatio(String name, double quantity, String unit) {
+        Map<String, Object> out = new LinkedHashMap<>();
+        String rawUnit = unit == null ? "" : unit.toLowerCase().trim();
+        String item = name == null ? "food" : name;
+
+        // Normalize quantity to a simple unit type: grams, milliliters, count
+        double grams = -1;
+        double milliliters = -1;
+        double count = -1;
+
+        try {
+            if (rawUnit.contains("kg") || rawUnit.contains("kilogram")) {
+                grams = quantity * 1000.0;
+            } else if (rawUnit.contains("g") || rawUnit.contains("gram")) {
+                grams = quantity;
+            } else if (rawUnit.contains("l") || rawUnit.contains("liter") || rawUnit.contains("litre")) {
+                milliliters = quantity * 1000.0;
+            } else if (rawUnit.contains("ml") || rawUnit.contains("milliliter")) {
+                milliliters = quantity;
+            } else if (rawUnit.contains("plate") || rawUnit.contains("plates")) {
+                // treat as count of plates
+                count = quantity;
+            } else if (rawUnit.contains("piece") || rawUnit.contains("pcs") || rawUnit.contains("pc") || rawUnit.contains("count")) {
+                count = quantity;
+            } else {
+                // unknown unit: attempt to guess from name (rice, chapati, apple, etc.)
+                String n = item.toLowerCase();
+                if (n.contains("rice") || n.contains("wheat") || n.contains("flour")) {
+                    grams = quantity * 1000.0; // assume user used kg value but didn't specify
+                } else if (n.contains("milk") || n.contains("juice") || n.contains("curd") || n.contains("soup")) {
+                    milliliters = quantity * 1000.0;
+                } else {
+                    // fallback treat as count
+                    count = quantity;
+                }
+            }
+        } catch (Exception e) {
+            // fallbacks below
+            grams = -1; milliliters = -1; count = quantity;
+        }
+
+        List<Map<String, Object>> variants = new ArrayList<>();
+
+        // For grains / solid food measured in grams
+        if (grams >= 0) {
+            // serving sizes in grams for small/average/large eater
+            double smallServing = 150.0; // grams
+            double avgServing = 200.0;
+            double largeServing = 300.0;
+
+            double smallPeople = Math.floor(grams / smallServing);
+            double avgPeople = Math.floor(grams / avgServing);
+            double largePeople = Math.floor(grams / largeServing);
+
+            variants.add(Map.of("label", "Small eater (~150 g)", "persons", (long) smallPeople, "serving_g", smallServing));
+            variants.add(Map.of("label", "Average eater (~200 g)", "persons", (long) avgPeople, "serving_g", avgServing));
+            variants.add(Map.of("label", "Large eater (~300 g)", "persons", (long) largePeople, "serving_g", largeServing));
+            out.put("type", "grams");
+            out.put("total_grams", grams);
+
+        } else if (milliliters >= 0) {
+            // liquids
+            double smallMl = 150.0;
+            double avgMl = 250.0;
+            double largeMl = 350.0;
+
+            double smallPeople = Math.floor(milliliters / smallMl);
+            double avgPeople = Math.floor(milliliters / avgMl);
+            double largePeople = Math.floor(milliliters / largeMl);
+
+            variants.add(Map.of("label", "Small serving (~150 ml)", "persons", (long) smallPeople, "serving_ml", smallMl));
+            variants.add(Map.of("label", "Average (~250 ml)", "persons", (long) avgPeople, "serving_ml", avgMl));
+            variants.add(Map.of("label", "Large (~350 ml)", "persons", (long) largePeople, "serving_ml", largeMl));
+            out.put("type", "milliliters");
+            out.put("total_ml", milliliters);
+
+        } else {
+            // treat as countable pieces or plates
+            double pieces = (count >= 0) ? count : quantity;
+            // assume 1 piece per person (small), 2 pieces average, 3 pieces large
+            long smallPeople = (long) Math.floor(pieces / 1.0);
+            long avgPeople = (long) Math.floor(pieces / 2.0);
+            long largePeople = (long) Math.floor(pieces / 3.0);
+
+            variants.add(Map.of("label", "1 piece per person", "persons", smallPeople, "piecesPerPerson", 1));
+            variants.add(Map.of("label", "2 pieces per person", "persons", avgPeople, "piecesPerPerson", 2));
+            variants.add(Map.of("label", "3 pieces per person", "persons", largePeople, "piecesPerPerson", 3));
+            out.put("type", "count");
+            out.put("total_count", pieces);
+        }
+
+        // Explanation text
+        String explanation = String.format("Predictions for '%s' (%s %s). These are heuristic estimates: some people eat less (small), some eat average, some larger portions. Use the prediction that best matches your recipient group's appetite.", item, quantity, unit);
+        out.put("variants", variants);
+        out.put("explanation", explanation);
+        out.put("input", Map.of("name", item, "quantity", quantity, "unit", unit));
+
+        // If an AI is configured, optionally ask it for a short text note (non-blocking)
+        if (aiEndpoint != null && !aiEndpoint.isBlank() && aiKey != null && !aiKey.isBlank()) {
+            try {
+                String prompt = "Given the donated item: \"" + item + "\" with quantity " + quantity + " " + unit + ", provide a concise explanation (1-2 sentences) of how many people might be fed and why. Also propose three portion sizes (small/average/large) in grams or ml or pieces depending on unit.";
+                String aiResp = generateWithGemini(prompt, 200);
+                out.put("aiNote", aiResp);
+            } catch (Exception e) {
+                // ignore AI failure, keep deterministic result
+            }
+        } else {
+            out.put("aiNote", "AI not configured - using deterministic heuristic.");
+        }
+
+        return out;
+    }
 }

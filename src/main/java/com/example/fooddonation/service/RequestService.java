@@ -79,10 +79,13 @@ public class RequestService {
         return requestRepo.findByDonationCreatedById(user.getId());
     }
 
-    // Keep original method if you still need it elsewhere (optional)
+    /**
+     * Return requests created by the current user (the requester -> "My Requests")
+     */
     @Transactional(readOnly = true)
-    public List<DonationRequest> listAllRequests() {
-        return requestRepo.findAll();
+    public List<DonationRequest> listRequestsByRequester(String currentUserEmail) {
+        var user = userRepo.findByEmail(currentUserEmail).orElseThrow(() -> new ApiException("User not found"));
+        return requestRepo.findByRequesterId(user.getId());
     }
 
     @Transactional
@@ -115,6 +118,34 @@ public class RequestService {
             );
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Allow the requester to cancel their own request (only before approved/fulfilled).
+     */
+    @Transactional
+    public void cancelRequest(Long requestId, String requesterEmail) {
+        DonationRequest dr = requestRepo.findById(requestId).orElseThrow(() -> new ApiException("Request not found"));
+        if (dr.getRequester() == null || !dr.getRequester().getEmail().equals(requesterEmail)) {
+            throw new ApiException("Only requester can cancel this request");
+        }
+        if ("APPROVED".equals(dr.getStatus()) || "FULFILLED".equals(dr.getStatus())) {
+            throw new ApiException("Cannot cancel an approved or fulfilled request");
+        }
+        dr.setStatus("CANCELLED");
+        requestRepo.save(dr);
+
+        // notify donor if present
+        try {
+            var donation = dr.getDonation();
+            if (donation != null && donation.getCreatedBy() != null && donation.getCreatedBy().getEmail() != null) {
+                emailService.sendSimpleMail(donation.getCreatedBy().getEmail(),
+                        "A request has been cancelled",
+                        "Request for donation " + donation.getTitle() + " was cancelled by the requester.");
+            }
+        } catch (Exception e) {
+            // ignore
         }
     }
 }

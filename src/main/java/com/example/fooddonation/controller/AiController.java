@@ -36,6 +36,12 @@ public class AiController {
         return ResponseEntity.ok(nutritionInfo);
     }
 
+    @GetMapping("/consume-ratio")
+    public ResponseEntity<?> consumeRatio(@RequestParam("name") String name, @RequestParam("quantity") double quantity, @RequestParam("unit") String unit) {
+        Map<String, Object> data = aiService.calculateConsumeRatio(name, quantity, unit);
+        return ResponseEntity.ok(data);
+    }
+
     @PostMapping("/chat")
     public ResponseEntity<?> chat(@RequestBody Map<String, String> body) {
         String message = body.get("message");
