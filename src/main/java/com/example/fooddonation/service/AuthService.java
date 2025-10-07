@@ -41,11 +41,34 @@ public class AuthService implements UserDetailsService {
             }
         }
         User user = new User(dto.getName(), dto.getEmail(), passwordEncoder.encode(dto.getPassword()), role);
+
+        // set address/location if provided
+        user.setAddress(dto.getAddress());
+        user.setCity(dto.getCity());
+        user.setState(dto.getState());
+        user.setPostalCode(dto.getPostalCode());
+        user.setCountry(dto.getCountry());
+        user.setLat(dto.getLat());
+        user.setLng(dto.getLng());
+
         userRepo.save(user);
         // generate token
         UserDetails userDetails = loadUserByUsername(user.getEmail());
         String token = jwtUtil.generateToken(userDetails);
-        return new AuthResponseDTO(token, user.getId(), user.getEmail(), user.getName(), user.getRole().name());
+        return new AuthResponseDTO(
+                token,
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getRole().name(),
+                user.getAddress(),
+                user.getLat(),
+                user.getLng(),
+                user.getCity(),
+                user.getState(),
+                user.getPostalCode(),
+                user.getCountry()
+        );
     }
 
     @Transactional(readOnly = true)
@@ -54,7 +77,20 @@ public class AuthService implements UserDetailsService {
         if (!passwordEncoder.matches(password, user.getPasswordHash())) throw new ApiException("Invalid credentials");
         UserDetails ud = loadUserByUsername(user.getEmail());
         String token = jwtUtil.generateToken(ud);
-        return new AuthResponseDTO(token, user.getId(), user.getEmail(), user.getName(), user.getRole().name());
+        return new AuthResponseDTO(
+                token,
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getRole().name(),
+                user.getAddress(),
+                user.getLat(),
+                user.getLng(),
+                user.getCity(),
+                user.getState(),
+                user.getPostalCode(),
+                user.getCountry()
+        );
     }
 
     @Override

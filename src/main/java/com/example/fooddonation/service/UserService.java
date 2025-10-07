@@ -16,6 +16,18 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserDTO getByEmail(String email) {
         var u = userRepo.findByEmail(email).orElseThrow(() -> new ApiException("User not found"));
-        return new UserDTO(u.getId(), u.getName(), u.getEmail(), u.getRole());
+        return new UserDTO(
+                u.getId(),
+                u.getName(),
+                u.getEmail(),
+                u.getRole(),
+                u.getAddress(),
+                u.getLat(),
+                u.getLng(),
+                u.getCity(),
+                u.getState(),
+                u.getPostalCode(),
+                u.getCountry()
+        );
     }
 }
