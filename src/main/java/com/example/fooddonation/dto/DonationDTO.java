@@ -1,4 +1,4 @@
-// filename: src/main/java/com/example/fooddonation/dto/DonationDTO.java
+// src/main/java/com/example/fooddonation/dto/DonationDTO.java
 package com.example.fooddonation.dto;
 
 public class DonationDTO {
@@ -8,15 +8,23 @@ public class DonationDTO {
     private String category;
     private Double quantity;
     private String unit;
-    private String expiryAt; // ISO string
+    private String expiryAt;
     private Double pickupLat;
     private Double pickupLng;
+
+    // NEW: pickup address fields in response
+    private String pickupAddress;
+    private String pickupCity;
+    private String pickupState;
+    private String pickupPostalCode;
+    private String pickupCountry;
+
     private String imageUrl;
     private String status;
     private Long createdById;
     private String createdByName;
 
-    // getters/setters
+    // getters/setters for all fields
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getTitle() { return title; }
@@ -35,6 +43,19 @@ public class DonationDTO {
     public void setPickupLat(Double pickupLat) { this.pickupLat = pickupLat; }
     public Double getPickupLng() { return pickupLng; }
     public void setPickupLng(Double pickupLng) { this.pickupLng = pickupLng; }
+
+    // pickup address getters/setters
+    public String getPickupAddress() { return pickupAddress; }
+    public void setPickupAddress(String pickupAddress) { this.pickupAddress = pickupAddress; }
+    public String getPickupCity() { return pickupCity; }
+    public void setPickupCity(String pickupCity) { this.pickupCity = pickupCity; }
+    public String getPickupState() { return pickupState; }
+    public void setPickupState(String pickupState) { this.pickupState = pickupState; }
+    public String getPickupPostalCode() { return pickupPostalCode; }
+    public void setPickupPostalCode(String pickupPostalCode) { this.pickupPostalCode = pickupPostalCode; }
+    public String getPickupCountry() { return pickupCountry; }
+    public void setPickupCountry(String pickupCountry) { this.pickupCountry = pickupCountry; }
+
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public String getStatus() { return status; }

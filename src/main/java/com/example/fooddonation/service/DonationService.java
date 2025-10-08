@@ -51,6 +51,11 @@ public class DonationService {
         }
         d.setPickupLat(dto.getPickupLat());
         d.setPickupLng(dto.getPickupLng());
+        d.setPickupAddress(dto.getPickupAddress());
+        d.setPickupCity(dto.getPickupCity());
+        d.setPickupState(dto.getPickupState());
+        d.setPickupPostalCode(dto.getPickupPostalCode());
+        d.setPickupCountry(dto.getPickupCountry());
         d.setCreatedBy(user);
         if (dto.getImageBase64() != null && !dto.getImageBase64().isEmpty()) {
             String url = cloudinaryService.uploadBase64(dto.getImageBase64(), "donations");
@@ -71,6 +76,11 @@ public class DonationService {
         dto.setExpiryAt(d.getExpiryAt() != null ? d.getExpiryAt().toString() : null);
         dto.setPickupLat(d.getPickupLat());
         dto.setPickupLng(d.getPickupLng());
+        dto.setPickupAddress(d.getPickupAddress());
+        dto.setPickupCity(d.getPickupCity());
+        dto.setPickupState(d.getPickupState());
+        dto.setPickupPostalCode(d.getPickupPostalCode());
+        dto.setPickupCountry(d.getPickupCountry());
         dto.setImageUrl(d.getImageUrl());
         dto.setStatus(d.getStatus());
         if (d.getCreatedBy() != null) {

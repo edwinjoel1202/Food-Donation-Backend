@@ -1,4 +1,4 @@
-// filename: src/main/java/com/example/fooddonation/model/Donation.java
+// src/main/java/com/example/fooddonation/model/Donation.java
 package com.example.fooddonation.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -19,17 +19,25 @@ public class Donation {
     private String description;
 
     @Column(nullable=false)
-    private String category; // e.g., cooked, raw, vegetables, rice, etc.
+    private String category;
 
     @Column(nullable=false)
     private Double quantity;
 
-    private String unit; // e.g., kg, liters, plates
+    private String unit;
 
     private LocalDateTime expiryAt;
 
     private Double pickupLat;
     private Double pickupLng;
+
+    // NEW: pickup address fields
+    @Column(length = 1000)
+    private String pickupAddress;
+    private String pickupCity;
+    private String pickupState;
+    private String pickupPostalCode;
+    private String pickupCountry;
 
     private String imageUrl;
 
@@ -37,15 +45,13 @@ public class Donation {
     private User createdBy;
 
     @Column(nullable=false)
-    private String status = "AVAILABLE"; // AVAILABLE, REQUESTED, CANCELLED, FULFILLED
+    private String status = "AVAILABLE";
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    // getters/setters, constructors
-
     public Donation() {}
 
-    // getters & setters...
+    // getters & setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getTitle() { return title; }
@@ -60,10 +66,24 @@ public class Donation {
     public void setUnit(String unit) { this.unit = unit; }
     public LocalDateTime getExpiryAt() { return expiryAt; }
     public void setExpiryAt(LocalDateTime expiryAt) { this.expiryAt = expiryAt; }
+
     public Double getPickupLat() { return pickupLat; }
     public void setPickupLat(Double pickupLat) { this.pickupLat = pickupLat; }
     public Double getPickupLng() { return pickupLng; }
     public void setPickupLng(Double pickupLng) { this.pickupLng = pickupLng; }
+
+    // NEW pickup address getters/setters
+    public String getPickupAddress() { return pickupAddress; }
+    public void setPickupAddress(String pickupAddress) { this.pickupAddress = pickupAddress; }
+    public String getPickupCity() { return pickupCity; }
+    public void setPickupCity(String pickupCity) { this.pickupCity = pickupCity; }
+    public String getPickupState() { return pickupState; }
+    public void setPickupState(String pickupState) { this.pickupState = pickupState; }
+    public String getPickupPostalCode() { return pickupPostalCode; }
+    public void setPickupPostalCode(String pickupPostalCode) { this.pickupPostalCode = pickupPostalCode; }
+    public String getPickupCountry() { return pickupCountry; }
+    public void setPickupCountry(String pickupCountry) { this.pickupCountry = pickupCountry; }
+
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public User getCreatedBy() { return createdBy; }

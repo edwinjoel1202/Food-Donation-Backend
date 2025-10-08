@@ -1,4 +1,4 @@
-// filename: src/main/java/com/example/fooddonation/dto/DonationCreateDTO.java
+// src/main/java/com/example/fooddonation/dto/DonationCreateDTO.java
 package com.example.fooddonation.dto;
 
 public class DonationCreateDTO {
@@ -7,12 +7,17 @@ public class DonationCreateDTO {
     private String category;
     private Double quantity;
     private String unit;
-    private String expiryAt; // ISO string, optional
+    private String expiryAt;
     private Double pickupLat;
     private Double pickupLng;
-    private String imageBase64; // optional - if sending base64 (or we can send multipart)
+    private String pickupAddress;      // NEW
+    private String pickupCity;         // NEW
+    private String pickupState;        // NEW
+    private String pickupPostalCode;   // NEW
+    private String pickupCountry;      // NEW
+    private String imageBase64;
 
-    // getters/setters
+    // getters/setters for all fields
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
     public String getDescription() { return description; }
@@ -29,6 +34,19 @@ public class DonationCreateDTO {
     public void setPickupLat(Double pickupLat) { this.pickupLat = pickupLat; }
     public Double getPickupLng() { return pickupLng; }
     public void setPickupLng(Double pickupLng) { this.pickupLng = pickupLng; }
+
+    // NEW fields
+    public String getPickupAddress() { return pickupAddress; }
+    public void setPickupAddress(String pickupAddress) { this.pickupAddress = pickupAddress; }
+    public String getPickupCity() { return pickupCity; }
+    public void setPickupCity(String pickupCity) { this.pickupCity = pickupCity; }
+    public String getPickupState() { return pickupState; }
+    public void setPickupState(String pickupState) { this.pickupState = pickupState; }
+    public String getPickupPostalCode() { return pickupPostalCode; }
+    public void setPickupPostalCode(String pickupPostalCode) { this.pickupPostalCode = pickupPostalCode; }
+    public String getPickupCountry() { return pickupCountry; }
+    public void setPickupCountry(String pickupCountry) { this.pickupCountry = pickupCountry; }
+
     public String getImageBase64() { return imageBase64; }
     public void setImageBase64(String imageBase64) { this.imageBase64 = imageBase64; }
 }
